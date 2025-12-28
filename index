@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Question</title>
+<style>
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #ff4d6d, #ff9a9e);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  width: 320px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 5;
+}
+
+h1 {
+  margin-bottom: 40px;
+  font-size: 24px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.buttons-container {
+  position: relative;
+  height: 60px;
+  width: 100%;
+}
+
+button {
+  border: none;
+  padding: 14px 30px;
+  font-size: 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s ease, background 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+#yes {
+  background: #00ff88;
+  color: black;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-120%);
+  z-index: 10;
+}
+
+#no {
+  background: #ff3333;
+  color: white;
+  position: absolute;
+  left: 50%;
+  transform: translateX(20%);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.success-msg {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.heart {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  user-select: none;
+  pointer-events: none;
+  animation: float 4s linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+}
+
+/* Broken Screen Green Line */
+.broken-line {
+  position: fixed;
+  height: 3px;
+  width: 100%;
+  background: #00ff00;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: 9999;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="mainCard">
+  <h1>Do you love me? ❤️</h1>
+  <div class="buttons-container">
+    <button id="yes" onclick="yesClick()">YES</button>
+    <button id="no" onmouseover="moveNo()" onclick="moveNo()">NO</button>
+  </div>
+</div>
+
+<div id="successContent" class="success-msg">
+  <div style="font-size: 80px; margin-bottom: 20px;">🥰</div>
+  <h1>YAY! ❤️</h1>
+  <p style="font-size: 18px;">I knew it! You can't say no to me. 😆</p>
+  <button style="position:static; margin-top: 20px; background: white; color: #ff4d6d;" onclick="location.reload()">Reset</button>
+</div>
+
+<!-- Broken Screen Lines -->
+<div id="line1" class="broken-line"></div>
+<div id="line2" class="broken-line"></div>
+
+<script>
+let yesScale = 1;
+
+function moveNo() {
+  const no = document.getElementById("no");
+  const yes = document.getElementById("yes");
+  
+  const maxX = window.innerWidth - 150;
+  const maxY = window.innerHeight - 50;
+  
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+  
+  no.style.position = "fixed";
+  no.style.left = x + "px";
+  no.style.top = y + "px";
+  no.style.transform = "none";
+
+  yesScale += 0.15;
+  yes.style.transform = `translateX(-120%) scale(${yesScale})`;
+}
+
+function yesClick() {
+  document.getElementById("mainCard").style.display = "none";
+  document.getElementById("successContent").style.display = "flex";
+  
+  for (let i = 0; i < 30; i++) createHeart();
+
+  // Short prank after 2 seconds
+  setTimeout(() => {
+    playBeep(2);
+    flashBrokenLines();
+  }, 2000);
+}
+
+// Floating hearts
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+  heart.innerHTML = "❤️";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.animationDuration = (Math.random() * 3 + 2) + "s";
+  heart.style.opacity = Math.random();
+  document.body.appendChild(heart);
+  setTimeout(() => { heart.remove(); }, 5000);
+}
+
+// Play n short beeps
+function playBeep(times) {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let t = 0;
+    for(let i=0;i<times;i++){
+      const oscillator = audioCtx.createOscillator();
+      oscillator.type='square';
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime + t);
+      oscillator.connect(audioCtx.destination);
+      oscillator.start(audioCtx.currentTime + t);
+      oscillator.stop(audioCtx.currentTime + t + 0.15);
+      t += 0.3;
+    }
+  } catch(e){}
+}
+
+// Flash broken green lines
+function flashBrokenLines() {
+  const l1 = document.getElementById("line1");
+  const l2 = document.getElementById("line2");
+  
+  l1.style.top = Math.random() * window.innerHeight + "px";
+  l2.style.top = Math.random() * window.innerHeight + "px";
+  
+  l1.style.display = "block";
+  l2.style.display = "block";
+  
+  setTimeout(() => {
+    l1.style.display = "none";
+    l2.style.display = "none";
+  }, 600);
+}
+</script>
+
+</body>
+</html>
